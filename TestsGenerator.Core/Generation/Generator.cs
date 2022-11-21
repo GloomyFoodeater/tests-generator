@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using TestsGenerator.Core.Exceptions;
 
 namespace TestsGenerator.Core.Generation;
 
@@ -33,12 +34,23 @@ public class Generator : ITestGenerator
     // Methods to get syntax nodes from source unit
     private static ClassDeclarationSyntax ExtractSourceClass(CompilationUnitSyntax root)
     {
-        throw new NotImplementedException();
+        var classesNodes = root.DescendantNodes().OfType<ClassDeclarationSyntax>().ToArray();
+        var classesCount = classesNodes.Length;
+
+        return classesCount switch
+        {
+            0 => throw new ClassCountException("Source unit does not contain any class definitions"),
+            > 1 => throw new ClassCountException($"Source unit contains {classesCount} classes instead of 1"),
+            _ => classesNodes.First()
+        };
     }
 
     private static IEnumerable<MethodDeclarationSyntax> ExtractSourceMethods(ClassDeclarationSyntax root)
     {
-        throw new NotImplementedException();
+        return root
+            .ChildNodes()
+            .OfType<MethodDeclarationSyntax>()
+            .Where(methodNode => methodNode.Modifiers.Any(SyntaxKind.PublicKeyword));
     }
 
     // Methods to generate syntax nodes into test unit
