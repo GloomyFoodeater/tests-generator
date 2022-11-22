@@ -84,7 +84,11 @@ public class Generator : ITestGenerator
         IEnumerable<MethodDeclarationSyntax> testsMethods,
         ClassDeclarationSyntax sourceClass)
     {
-        throw new NotImplementedException();
+        var name = sourceClass.Identifier.Text + "Tests";
+        var modifiers = TokenList(Token(SyntaxKind.PublicKeyword));
+        return ClassDeclaration(name)
+            .WithModifiers(modifiers)
+            .AddMembers(testsMethods.ToArray());
     }
 
     private static FileScopedNamespaceDeclarationSyntax GenerateTestsNamespace(
