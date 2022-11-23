@@ -2,5 +2,5 @@
 
 public interface ITestGenerator
 {
-    public TestsInfo Generate(string source);
+    public IEnumerable<TestsInfo> Generate(string source);
 }

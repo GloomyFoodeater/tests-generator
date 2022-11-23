@@ -10,105 +10,196 @@ namespace TestsGenerator.Core.Generation;
 [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
 public class Generator : ITestGenerator
 {
-    public TestsInfo Generate(string source)
+    public IEnumerable<TestsInfo> Generate(string source)
     {
         var tree = CSharpSyntaxTree.ParseText(source);
-
-        // Extract all essential syntax members from source unit
         var sourceUnit = tree.GetCompilationUnitRoot();
-        var sourceUseDirectives = sourceUnit.DescendantNodes().OfType<UsingDirectiveSyntax>();
-        var sourceClass = ExtractSourceClass(sourceUnit);
-        var sourceNamespace = sourceClass.Parent as BaseNamespaceDeclarationSyntax;
-        var sourceMethods = ExtractSourceMethods(sourceClass);
+        var sourceClasses = sourceUnit
+            .DescendantNodes()
+            .OfType<ClassDeclarationSyntax>()
+            .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword))
+            .ToArray();
 
-        // Generate unit test
-        var testsMethods = GenerateTestsMethods(sourceMethods).ToArray();
-        var testsClass = GenerateTestsClass(testsMethods, sourceClass);
-        var testsNamespace = GenerateTestsNamespace(testsClass, sourceNamespace!);
-        var testsUseDirectives = GenerateTestsUsingDirectives(sourceNamespace!, sourceUseDirectives);
-        var testsUnit = GenerateTestsUnit(testsUseDirectives, testsNamespace);
+        if (!sourceClasses.Any())
+            throw new ClassCountException("Source does not contain any classes");
 
-        // Return test with identical name as source class
-        return new TestsInfo(sourceClass.Identifier.Text + "Tests", testsUnit.NormalizeWhitespace().ToFullString());
+        var testsInfos = new List<TestsInfo>();
+        foreach (var sourceClass in sourceClasses)
+        {
+            // Generate methods
+            var testsMethods = GenerateTestsMethods(sourceClass);
+
+            // Generate class
+            var testsClass = GenerateTestsClass(testsMethods, sourceClass);
+
+            // Generate namespace
+            var sourceNamespaceName = ExtractSourceNamespaceFullName(sourceClass);
+            var testsNamespace = GenerateTestsNamespace(testsClass, sourceNamespaceName);
+
+            // Generate use directives
+            var sourceUsingDirectives = sourceUnit.DescendantNodes().OfType<UsingDirectiveSyntax>();
+            var testsUsingDirectives = GenerateTestsUsingDirectives(sourceUsingDirectives, sourceNamespaceName);
+
+            // Generate unit
+            var testsUnit = GenerateTestsUnit(testsUsingDirectives, testsNamespace);
+
+            var testsName = sourceClass.Identifier.Text + "Tests";
+            var testsContent = testsUnit.NormalizeWhitespace().ToFullString();
+            testsInfos.Add(new(testsName, testsContent));
+        }
+
+        return testsInfos;
     }
 
-    // Methods to get syntax nodes from source unit
-    private static ClassDeclarationSyntax ExtractSourceClass(CompilationUnitSyntax root)
+    private SyntaxList<UsingDirectiveSyntax> GenerateTestsUsingDirectives(
+        IEnumerable<UsingDirectiveSyntax> sourceUsingDirectives, NameSyntax sourceNamespaceName)
     {
-        var classesNodes = root.DescendantNodes().OfType<ClassDeclarationSyntax>().ToArray();
-        var classesCount = classesNodes.Length;
+        // Outer namespaces first
+        var sourceNamespaceNames = new Stack<NameSyntax>();
 
-        return classesCount switch
+        // Get all nested namespaces full names by qualified name syntax 
+        var current = sourceNamespaceName;
+        while (current is QualifiedNameSyntax complexName)
         {
-            0 => throw new ClassCountException("Source unit does not contain any class definitions"),
-            > 1 => throw new ClassCountException($"Source unit contains {classesCount} classes instead of 1"),
-            _ => classesNodes.First()
+            sourceNamespaceNames.Push(current);
+            current = complexName.Left;
+        }
+
+        sourceNamespaceNames.Push(current);
+
+        // Return list of namespaces
+        return new SyntaxList<UsingDirectiveSyntax>()
+            .Add(UsingDirective(ParseName("System")))
+            .Add(UsingDirective(ParseName("System.Collections.Generic")))
+            .Add(UsingDirective(ParseName("System.Linq")))
+            .Add(UsingDirective(ParseName("System.Text")))
+            .Add(UsingDirective(ParseName("XUnit")))
+            .AddRange(sourceUsingDirectives) // Namespaces from source unit & nested namespaces
+            .AddRange(sourceNamespaceNames.Select(UsingDirective)); // Outer & own namespaces of source class;
+    }
+
+    private FileScopedNamespaceDeclarationSyntax GenerateTestsNamespace(ClassDeclarationSyntax testsClass,
+        NameSyntax sourceNamespaceName)
+    {
+        // Append test postfix to found name
+        var name = QualifiedName(sourceNamespaceName, IdentifierName("Tests"));
+
+        return FileScopedNamespaceDeclaration(name).AddMembers(testsClass);
+    }
+
+    private NameSyntax ExtractSourceNamespaceFullName(ClassDeclarationSyntax sourceClass)
+    {
+        NameSyntax GetFullNameFrom(NamespaceDeclarationSyntax @namespace)
+        {
+            // Collect identifiers of namespaces in reverse order
+            var stack = new Stack<string>();
+            for (var current = @namespace; current != null; current = current.Parent as NamespaceDeclarationSyntax)
+                stack.Push(current.Name.ToString());
+
+            return ParseName(string.Join(".", stack));
+        }
+
+        // Return full name of source class namespace
+        return sourceClass.Parent switch
+        {
+            // Class can be either in =1 file scoped namespace or in >=1 nested namespaces
+            FileScopedNamespaceDeclarationSyntax fileNamespace => fileNamespace.Name,
+            NamespaceDeclarationSyntax @namespace => GetFullNameFrom(@namespace),
+            _ => throw new SyntaxException("Source class was not in namespace")
         };
     }
 
-    private static IEnumerable<MethodDeclarationSyntax> ExtractSourceMethods(ClassDeclarationSyntax root)
+    private MethodDeclarationSyntax[] GenerateTestsMethods(ClassDeclarationSyntax sourceClass)
     {
-        return root
-            .ChildNodes()
-            .OfType<MethodDeclarationSyntax>()
-            .Where(methodNode => methodNode.Modifiers.Any(SyntaxKind.PublicKeyword));
+        return (from sourceMember in sourceClass.Members
+                let sourceMethod = sourceMember as MethodDeclarationSyntax
+                where sourceMethod != null && sourceMethod.Modifiers.Any(SyntaxKind.PublicKeyword)
+                let attributes = SingletonList(
+                    AttributeList(
+                        SingletonSeparatedList(
+                            Attribute(
+                                IdentifierName("Fact")))))
+                let modifiers = TokenList(Token(SyntaxKind.PublicKeyword))
+                let identifier = Identifier(sourceMethod.Identifier.Text + "Test")
+                let returnType = PredefinedType(Token(SyntaxKind.VoidKeyword))
+                let body = Block(
+                    ExpressionStatement(
+                        InvocationExpression(
+                            MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName(
+                                    Identifier("Assert")),
+                                IdentifierName("Fail")),
+                            ArgumentList(
+                                SingletonSeparatedList(
+                                    Argument(
+                                        LiteralExpression(
+                                            SyntaxKind.StringLiteralExpression,
+                                            Literal("autogenerated"))))))))
+                select MethodDeclaration(returnType, identifier)
+                    .WithModifiers(modifiers)
+                    .WithAttributeLists(attributes)
+                    .WithBody(body))
+            .ToArray();
     }
 
-    // Methods to generate syntax nodes into test unit
-    private static IEnumerable<MethodDeclarationSyntax> GenerateTestsMethods(
-        IEnumerable<MethodDeclarationSyntax> sourceMethods)
-    {
-        return from sourceMethod in sourceMethods
-            let attributes = SingletonList(AttributeList(SingletonSeparatedList(Attribute(IdentifierName("Fact")))))
-            let returnType = PredefinedType(Token(SyntaxKind.VoidKeyword))
-
-            // Syntax of: Assert.Fail("autogenerated");
-            let body = Block(
-                ExpressionStatement(
-                    InvocationExpression(
-                        MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
-                            IdentifierName(Identifier("Assert")),
-                            IdentifierName("Fail")),
-                        ArgumentList(SingletonSeparatedList(Argument(LiteralExpression(
-                            SyntaxKind.StringLiteralExpression,
-                            Literal("autogenerated"))))))))
-
-            // New method by name, return type, body, attributes, modifiers
-            select MethodDeclaration(returnType, sourceMethod.Identifier)
-                .WithModifiers(sourceMethod.Modifiers)
-                .WithAttributeLists(attributes)
-                .WithBody(body);
-    }
-
-    private static ClassDeclarationSyntax GenerateTestsClass(
-        IEnumerable<MethodDeclarationSyntax> testsMethods,
+    [SuppressMessage("ReSharper", "CoVariantArrayConversion")]
+    private ClassDeclarationSyntax GenerateTestsClass(
+        MethodDeclarationSyntax[] testsMethods,
         ClassDeclarationSyntax sourceClass)
     {
         var name = sourceClass.Identifier.Text + "Tests";
         var modifiers = TokenList(Token(SyntaxKind.PublicKeyword));
         return ClassDeclaration(name)
             .WithModifiers(modifiers)
-            .AddMembers(testsMethods.ToArray());
+            .AddMembers(testsMethods);
     }
 
     private static FileScopedNamespaceDeclarationSyntax GenerateTestsNamespace(
         ClassDeclarationSyntax testsClass,
-        BaseNamespaceDeclarationSyntax sourceNamespace)
+        ClassDeclarationSyntax sourceClass)
     {
-        throw new NotImplementedException();
+        NameSyntax GetFullNameFrom(NamespaceDeclarationSyntax @namespace)
+        {
+            // Collect identifiers of namespaces in reverse order
+            var stack = new Stack<string>();
+            for (var current = @namespace; current != null; current = current.Parent as NamespaceDeclarationSyntax)
+                stack.Push(current.Name.ToString());
+
+            return ParseName(string.Join(".", stack));
+        }
+
+        // Get full name of source class namespace
+        var name = sourceClass.Parent switch
+        {
+            // Class can be either in =1 file scoped namespace or in >=1 nested namespaces
+            FileScopedNamespaceDeclarationSyntax fileNamespace => fileNamespace.Name,
+            NamespaceDeclarationSyntax @namespace => GetFullNameFrom(@namespace),
+            _ => throw new SyntaxException("Source class was not in namespace")
+        };
+
+        // Append test postfix to found name
+        name = QualifiedName(name, IdentifierName("Tests"));
+
+        return FileScopedNamespaceDeclaration(name).AddMembers(testsClass);
     }
 
-    private static IEnumerable<UsingDirectiveSyntax> GenerateTestsUsingDirectives(
-        BaseNamespaceDeclarationSyntax sourceNamespace,
-        IEnumerable<UsingDirectiveSyntax> sourceUseDirectives)
+    private IEnumerable<UsingDirectiveSyntax> GenerateTestsUsingDirectives(CompilationUnitSyntax sourceUnit)
     {
-        throw new NotImplementedException();
+        var usingDirectives = new SyntaxList<UsingDirectiveSyntax>()
+            .Add(UsingDirective(ParseName("System")))
+            .Add(UsingDirective(ParseName("System.Collections.Generic")))
+            .Add(UsingDirective(ParseName("System.Linq")))
+            .Add(UsingDirective(ParseName("System.Text")))
+            .Add(UsingDirective(ParseName("XUnit")))
+            .AddRange(sourceUnit.DescendantNodes().OfType<UsingDirectiveSyntax>());
+        return usingDirectives;
     }
 
-    private static CompilationUnitSyntax GenerateTestsUnit(
-        IEnumerable<UsingDirectiveSyntax> testsUseDirectives,
+    private CompilationUnitSyntax GenerateTestsUnit(SyntaxList<UsingDirectiveSyntax> testsUsingDirectives,
         FileScopedNamespaceDeclarationSyntax testsNamespace)
     {
-        throw new NotImplementedException();
+        return CompilationUnit()
+            .WithUsings(testsUsingDirectives)
+            .WithMembers(new SyntaxList<MemberDeclarationSyntax>(testsNamespace));
     }
 }
