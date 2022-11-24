@@ -62,7 +62,7 @@ internal static class SyntaxUtils
             // Class can be either in =1 file scoped namespace or in >=1 nested namespaces.
             FileScopedNamespaceDeclarationSyntax fileNamespace => fileNamespace.Name,
             NamespaceDeclarationSyntax @namespace => GetFullNameFrom(@namespace),
-            _ => throw new SyntaxException("Source class was not in namespace")
+            _ => throw new SourceSyntaxException("Source class declaration was not in namespace")
         };
     }
 
