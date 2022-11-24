@@ -128,7 +128,21 @@ internal static class SyntaxUtils
         return FileScopedNamespaceDeclaration(name).AddMembers(testsClass);
     }
 
-    
+    private static List<UsingDirectiveSyntax> AddChained(this List<UsingDirectiveSyntax> self,
+        UsingDirectiveSyntax item)
+    {
+        self.Add(item);
+        return self;
+    }
+
+
+    private static List<UsingDirectiveSyntax> AddChained(this List<UsingDirectiveSyntax> self,
+        IEnumerable<UsingDirectiveSyntax> items)
+    {
+        self.AddRange(items);
+        return self;
+    }
+
     public static SyntaxList<UsingDirectiveSyntax> GenerateTestsUsingDirectives(
         IEnumerable<UsingDirectiveSyntax> sourceUsingDirectives,
         NameSyntax sourceNamespaceName)
@@ -138,17 +152,18 @@ internal static class SyntaxUtils
         var sourceNamespaces = GetAllNamespacesFrom(sourceNamespaceName);
 
         // Return list of namespaces.
-        return new SyntaxList<UsingDirectiveSyntax>()
-            .Add(UsingDirective(ParseName("System")))
-            .Add(UsingDirective(ParseName("System.Collections.Generic")))
-            .Add(UsingDirective(ParseName("System.Linq")))
-            .Add(UsingDirective(ParseName("System.Text")))
-            .Add(UsingDirective(ParseName("XUnit")))
-            .AddRange(sourceUsingDirectives) // Namespaces from source unit & nested namespaces
-            .AddRange(sourceNamespaces.Select(UsingDirective)); // Outer & own namespaces of source class
+        return new SyntaxList<UsingDirectiveSyntax>(new List<UsingDirectiveSyntax>()
+            .AddChained(UsingDirective(ParseName("System")))
+            .AddChained(UsingDirective(ParseName("System.Collections.Generic")))
+            .AddChained(UsingDirective(ParseName("System.Linq")))
+            .AddChained(UsingDirective(ParseName("System.Text")))
+            .AddChained(UsingDirective(ParseName("XUnit")))
+            .AddChained(sourceUsingDirectives) // Namespaces from source unit & nested namespaces
+            .AddChained(sourceNamespaces.Select(UsingDirective)) // Outer & own namespaces of source class
+            .DistinctBy(usingDirective => usingDirective.Name.ToString()));
     }
 
-    
+
     public static CompilationUnitSyntax GenerateTestsUnit(
         SyntaxList<UsingDirectiveSyntax> testsUsingDirectives,
         FileScopedNamespaceDeclarationSyntax testsNamespace)
