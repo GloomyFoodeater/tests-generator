@@ -12,7 +12,7 @@ public class XUnitGenerator : ITestGenerator
     {
         // Extract members from source unit.
         var sourceUnit = CSharpSyntaxTree.ParseText(source).GetCompilationUnitRoot();
-        
+
         var hasErrors = sourceUnit
             .GetDiagnostics()
             .Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
@@ -23,11 +23,12 @@ public class XUnitGenerator : ITestGenerator
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
             .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword)) // Only public classes
-            .ToArray();
+            .ToArray(); // Multiple enumerations below => immediate execution
 
         var sourceUsingDirectives = sourceUnit
             .DescendantNodes()
-            .OfType<UsingDirectiveSyntax>();
+            .OfType<UsingDirectiveSyntax>()
+            .Where(usingDirective => usingDirective.StaticKeyword.IsMissing);
 
         if (!sourceClasses.Any())
             throw new SourceSyntaxException("Source unit does not contain any classes");
