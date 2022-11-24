@@ -8,6 +8,18 @@ namespace TestsGenerator.Core.Generation;
 
 internal static class SyntaxUtils
 {
+    private static List<T> AddChained<T>(this List<T> self, T item)
+    {
+        self.Add(item);
+        return self;
+    }
+
+    private static List<T> AddChained<T>(this List<T> self, IEnumerable<T> items)
+    {
+        self.AddRange(items);
+        return self;
+    }
+
     private static string GetFullNameOf(NamespaceDeclarationSyntax nestedNamespace)
     {
         // Collect identifiers of namespaces in reverse order.
@@ -123,21 +135,6 @@ internal static class SyntaxUtils
             IdentifierName("Tests"));
 
         return FileScopedNamespaceDeclaration(name).AddMembers(testsClass);
-    }
-
-    private static List<UsingDirectiveSyntax> AddChained(this List<UsingDirectiveSyntax> self,
-        UsingDirectiveSyntax item)
-    {
-        self.Add(item);
-        return self;
-    }
-
-
-    private static List<UsingDirectiveSyntax> AddChained(this List<UsingDirectiveSyntax> self,
-        IEnumerable<UsingDirectiveSyntax> items)
-    {
-        self.AddRange(items);
-        return self;
     }
 
     public static SyntaxList<UsingDirectiveSyntax> GenerateTestsUsingDirectives(
