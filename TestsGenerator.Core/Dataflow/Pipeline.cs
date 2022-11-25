@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Threading.Tasks.Dataflow;
+﻿using System.Threading.Tasks.Dataflow;
 using TestsGenerator.Core.Generation;
 
 namespace TestsGenerator.Core.Dataflow;
@@ -41,22 +40,49 @@ public class Pipeline
 
     private async Task<string> ReadContent(string filePath)
     {
-        using var streamReader = new StreamReader(filePath);
-        var result = await streamReader.ReadToEndAsync();
+        // Generator must return empty collection from empty string.
+        var result = string.Empty;
+        try
+        {
+            using var streamReader = new StreamReader(filePath);
+            result = await streamReader.ReadToEndAsync();
+        }
+        catch
+        {
+            // Ignore.
+        }
+
         return result;
     }
 
     private IEnumerable<TestsInfo> GenerateTests(string fileContent)
     {
-        return _configuration.TestsGenerator // Generator must be thread safe
-            .Generate(fileContent)
-            .ToArray(); // Immediate execution
+        var tests = Array.Empty<TestsInfo>();
+        try
+        {
+            tests = _configuration.TestsGenerator // Generator must be thread safe
+                .Generate(fileContent)
+                .ToArray(); // Immediate execution
+        }
+        catch
+        {
+            // Ignore.
+        }
+
+        return tests;
     }
 
     private async Task WriteTests(TestsInfo testsInfo)
     {
-        var testsPath = $"{_configuration.SavePath}\\{testsInfo.Name}Tests.cs";
-        await using var streamWriter = new StreamWriter(testsPath);
-        await streamWriter.WriteAsync(testsInfo.Content);
+        try
+        {
+            var testsPath = $"{_configuration.SavePath}\\{testsInfo.Name}Tests.cs";
+            await using var streamWriter = new StreamWriter(testsPath);
+            await streamWriter.WriteAsync(testsInfo.Content);
+        }
+        catch
+        {
+            // Ignore.
+        }
     }
 }
