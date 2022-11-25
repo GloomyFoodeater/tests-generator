@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks.Dataflow;
+﻿using System.Collections.Concurrent;
+using System.Threading.Tasks.Dataflow;
 using TestsGenerator.Core.Generation;
 
 namespace TestsGenerator.Core.Dataflow;
@@ -47,7 +48,6 @@ public class Pipeline
 
     private IEnumerable<TestsInfo> GenerateTests(string fileContent)
     {
-        var generator = new XUnitGenerator();
         return _configuration.TestsGenerator // Generator must be thread safe
             .Generate(fileContent)
             .ToArray(); // Immediate execution
