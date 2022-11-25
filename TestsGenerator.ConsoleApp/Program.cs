@@ -74,7 +74,7 @@ var configuration = new PipelineConfiguration
     MaxWritingTasks = maxWritingTasks > 0 ? maxWritingTasks : PipelineConfiguration.DefaultWritingTasks,
     SavePath = savePath
 };
-var pipeline = new Pipeline(configuration);
+var pipeline = new TestGenerationPipeline(configuration);
 Console.WriteLine($"Pipeline configurations: " +
                   $"-d '{configuration.SavePath}' " +
                   $"-r {configuration.MaxReadingTasks} " +
@@ -82,7 +82,7 @@ Console.WriteLine($"Pipeline configurations: " +
                   $"-w {configuration.MaxProcessingTasks}.");
 
 // Start processing files.
-var generatedAny = pipeline.PerformProcessing(sourceFiles).Result;
+var generatedAny = pipeline.Process(sourceFiles).Result;
 Console.WriteLine(generatedAny
     ? $"Tests generated in '{Path.GetFullPath(savePath + "\\")}'."
     : "No tests were generated.");

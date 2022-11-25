@@ -3,19 +3,19 @@ using TestsGenerator.Core.Generation;
 
 namespace TestsGenerator.Core.Dataflow;
 
-public class Pipeline
+public class TestGenerationPipeline
 {
-    private bool _generatedAny = false;
+    private bool _generatedAny;
 
     private readonly PipelineConfiguration _configuration;
 
-    public Pipeline(PipelineConfiguration configuration) => _configuration = configuration;
+    public TestGenerationPipeline(PipelineConfiguration configuration) => _configuration = configuration;
 
-    public async Task<bool> PerformProcessing(IEnumerable<string> filePaths)
+    public async Task<bool> Process(IEnumerable<string> filePaths)
     {
         // Create pipeline blocks.
         var readingBlock = new TransformBlock<string, string>(
-            ReadContent,
+            ReadFile,
             new ExecutionDataflowBlockOptions { MaxDegreeOfParallelism = _configuration.MaxReadingTasks });
 
         var processingBlock = new TransformManyBlock<string, TestsInfo>(
@@ -41,7 +41,7 @@ public class Pipeline
         return _generatedAny;
     }
 
-    private async Task<string> ReadContent(string filePath)
+    private async Task<string> ReadFile(string filePath)
     {
         // Generator must return empty collection from empty string.
         var result = string.Empty;
