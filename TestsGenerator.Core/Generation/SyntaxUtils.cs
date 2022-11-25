@@ -34,7 +34,7 @@ internal static class SyntaxUtils
         return string.Join(".", stack);
     }
 
-    public static IEnumerable<string> GetFullNamespacesNamesFrom(ClassDeclarationSyntax sourceClass)
+    public static string[] GetFullNamespacesNamesFrom(ClassDeclarationSyntax sourceClass)
     {
         var fullInnerName = sourceClass.Parent switch
         {
