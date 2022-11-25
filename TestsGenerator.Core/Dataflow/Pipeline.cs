@@ -39,7 +39,7 @@ public class Pipeline
         await writingBlock.Completion;
     }
 
-    private static async Task<string> ReadContent(string filePath)
+    private async Task<string> ReadContent(string filePath)
     {
         using var streamReader = new StreamReader(filePath);
         var result = await streamReader.ReadToEndAsync();
