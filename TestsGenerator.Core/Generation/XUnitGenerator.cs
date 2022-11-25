@@ -43,7 +43,7 @@ public class XUnitGenerator : ITestGenerator
             let testsUsingDirectives = GenerateTestsUsingDirectives(usingDirectives, namespacesNames)
             let testsUnit = GenerateTestsUnit(testsUsingDirectives, testsNamespace)
             select new TestsInfo(
-                @class.Identifier.Text,
+                $"{namespacesNames[^1]}.{@class.Identifier}",
                 testsUnit.NormalizeWhitespace().ToFullString());
     }
 }
