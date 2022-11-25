@@ -5,11 +5,13 @@ namespace TestsGenerator.Core.Dataflow;
 
 public class Pipeline
 {
+    private bool _generatedAny = false;
+
     private readonly PipelineConfiguration _configuration;
 
     public Pipeline(PipelineConfiguration configuration) => _configuration = configuration;
 
-    public async Task PerformProcessing(IEnumerable<string> filePaths)
+    public async Task<bool> PerformProcessing(IEnumerable<string> filePaths)
     {
         // Create pipeline blocks.
         var readingBlock = new TransformBlock<string, string>(
@@ -36,6 +38,7 @@ public class Pipeline
         // Wait last block completion.
         readingBlock.Complete();
         await writingBlock.Completion;
+        return _generatedAny;
     }
 
     private async Task<string> ReadContent(string filePath)
@@ -79,6 +82,7 @@ public class Pipeline
             var testsPath = $"{_configuration.SavePath}\\{testsInfo.Name}Tests.cs";
             await using var streamWriter = new StreamWriter(testsPath);
             await streamWriter.WriteAsync(testsInfo.Content);
+            _generatedAny = true;
         }
         catch
         {

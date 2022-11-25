@@ -4,7 +4,7 @@ using static System.Int32;
 // General usage message.
 if (args.Length == 0)
 {
-    var message = $"Invalid number of parameters({args.Length})\n" +
+    var message = $"Invalid number of parameters({args.Length}).\n" +
                   "Syntax: <source file>{<source file>} " +
                   "[-d <output path>] " +
                   "[-r max reading tasks] " +
@@ -57,7 +57,7 @@ for (; i < args.Length; i++)
                 break;
             // Write tasks warning.
             default:
-                Console.Error.WriteLine($"Unknown option '{args[i + 1]}'");
+                Console.Error.WriteLine($"Unknown option '{args[i + 1]}'.");
                 break;
         }
 }
@@ -78,9 +78,11 @@ var pipeline = new Pipeline(configuration);
 Console.WriteLine($"Pipeline configurations: " +
                   $"-d '{configuration.SavePath}' " +
                   $"-r {configuration.MaxReadingTasks} " +
-                  $"-p {configuration.MaxProcessingTasks}, " +
-                  $"-w {configuration.MaxProcessingTasks}");
+                  $"-p {configuration.MaxProcessingTasks} " +
+                  $"-w {configuration.MaxProcessingTasks}.");
 
 // Start processing files.
-await pipeline.PerformProcessing(sourceFiles);
-Console.WriteLine($"Tests generated in '{Path.GetFullPath(savePath + "\\")}'");
+var generatedAny = pipeline.PerformProcessing(sourceFiles).Result;
+Console.WriteLine(generatedAny
+    ? $"Tests generated in '{Path.GetFullPath(savePath + "\\")}'."
+    : "No tests were generated.");
