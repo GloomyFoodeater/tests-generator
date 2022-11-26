@@ -27,27 +27,49 @@
 
     <ItemGroup>
       <Compile Remove="TestData\InvalidSyntax.cs" />
-      <EmbeddedResource Include="TestData\InvalidSyntax.txt" />
+      <EmbeddedResource Include="TestData\InvalidSyntax.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\ZeroClasses.cs" />
-      <EmbeddedResource Include="TestData\ZeroClasses.txt" />
+      <EmbeddedResource Include="TestData\ZeroClasses.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\MissingNamespace.cs" />
-      <EmbeddedResource Include="TestData\MissingNamespace.txt" />
+      <EmbeddedResource Include="TestData\MissingNamespace.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\SameClasses.cs" />
-      <EmbeddedResource Include="TestData\SameClasses.txt" />
+      <EmbeddedResource Include="TestData\SameClasses.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\StaticsUsingDirectives.cs" />
-      <EmbeddedResource Include="TestData\StaticUsingDirectives.txt" />
+      <EmbeddedResource Include="TestData\StaticUsingDirectives.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\SingleClass.cs" />
-      <EmbeddedResource Include="TestData\SingleClass.txt" />
+      <EmbeddedResource Include="TestData\SingleClass.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\SingleClassExpected.cs" />
-      <EmbeddedResource Include="TestData\SingleClassTests.txt" />
+      <EmbeddedResource Include="TestData\SingleClassTests.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\ManyClasses.cs" />
-      <EmbeddedResource Include="TestData\ManyClasses.txt" />
+      <EmbeddedResource Include="TestData\ManyClasses.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests1.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests1.txt" />
+      <EmbeddedResource Include="TestData\ManyClassesTests1.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests2.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests2.txt" />
+      <EmbeddedResource Include="TestData\ManyClassesTests2.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests3.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests3.txt" />
+      <EmbeddedResource Include="TestData\ManyClassesTests3.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
     </ItemGroup>
 
 </Project>
