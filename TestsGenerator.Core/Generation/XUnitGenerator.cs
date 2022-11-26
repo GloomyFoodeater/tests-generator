@@ -17,21 +17,21 @@ public class XUnitGenerator : ITestGenerator
             .GetDiagnostics()
             .Any(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
         if (hasErrors)
-            throw new SourceSyntaxException($"Source unit has syntax errors");
+            throw new TestsGeneratorException($"Source unit has syntax errors");
 
         var classes = unit
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
             .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword)) // Only public classes
             .ToArray(); // Multiple enumerations below => immediate execution
-
+        
         var usingDirectives = unit
             .DescendantNodes()
             .OfType<UsingDirectiveSyntax>()
             .Where(usingDirective => usingDirective.StaticKeyword.IsMissing);
 
         if (!classes.Any())
-            throw new SourceSyntaxException("Source unit does not contain any classes");
+            throw new TestsGeneratorException("Source unit does not contain any classes");
 
         // Generate sequentially methods, classes, namespaces, using directives and units
         // for each source class and create tests from units.

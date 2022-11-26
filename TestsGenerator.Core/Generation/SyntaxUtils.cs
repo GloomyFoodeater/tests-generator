@@ -40,7 +40,7 @@ internal static class SyntaxUtils
         {
             NamespaceDeclarationSyntax nestedNamespace => GetFullNameOf(nestedNamespace),
             FileScopedNamespaceDeclarationSyntax fileScopedNamespace => fileScopedNamespace.Name.ToString(),
-            _ => throw new SourceSyntaxException("Source class declaration was not in namespace")
+            _ => throw new TestsGeneratorException("Source class declaration was not in namespace")
         };
 
         // Re-splitting for nested namespaces is necessary,
