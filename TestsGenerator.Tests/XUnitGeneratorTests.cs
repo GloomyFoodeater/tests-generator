@@ -58,8 +58,8 @@ public class XUnitGeneratorTests
 
         // Assert
         Assert.Single(testsInfos);
-        Assert.Equal("MyNamespace.MyClass", testsInfos[0].Name);
-        Assert.Equal(testsUnit, testsInfos[0].Content);
+        Assert.Equal("MyNamespace.MyClass", testsInfos.First().Name);
+        Assert.Equal(testsUnit, testsInfos.First().Content);
     }
 
     [Fact]
