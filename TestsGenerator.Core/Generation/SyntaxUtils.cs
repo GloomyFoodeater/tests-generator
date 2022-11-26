@@ -72,6 +72,117 @@ internal static class SyntaxUtils
                         null))));
     }
 
+    public static BlockSyntax GetTemplateTestBlock(MethodDeclarationSyntax sourceMethod)
+    {
+        // Parts of the block.
+        var arrangePart = new List<StatementSyntax>();
+        StatementSyntax actPart;
+        var assertPart = new List<StatementSyntax>();
+
+        // Comma-separated argument list of method invocation.
+        var separatedArguments = new List<SyntaxNodeOrToken>();
+
+        // Iterate over parameters to create arrange part and argument list of act part.
+        foreach (var parameter in sourceMethod.ParameterList.Parameters)
+        {
+            var declaration = LocalDeclarationStatement(
+                VariableDeclaration(parameter.Type!)
+                    .WithVariables(
+                        SingletonSeparatedList(
+                            VariableDeclarator(parameter.Identifier.Text)
+                                .WithInitializer(
+                                    EqualsValueClause(
+                                        LiteralExpression(
+                                            SyntaxKind.DefaultLiteralExpression,
+                                            Token(SyntaxKind.DefaultKeyword)))))));
+            separatedArguments.Add(Argument(IdentifierName(parameter.Identifier.Text)));
+            separatedArguments.Add(Token(SyntaxKind.CommaToken));
+            arrangePart.Add(declaration);
+        }
+
+        if (separatedArguments.Any())
+            separatedArguments.RemoveAt(separatedArguments.Count - 1);
+
+        // Create invocation of source method in act part.
+        var methodInvocation = InvocationExpression(
+                MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    IdentifierName((sourceMethod.Parent as ClassDeclarationSyntax)!.Identifier.Text),
+                    IdentifierName(sourceMethod.Identifier.Text)))
+            .WithArgumentList(
+                ArgumentList(
+                    SeparatedList<ArgumentSyntax>(
+                        separatedArguments.ToArray())));
+
+        // Create act part and add comparison with expected value in assert part.
+        if (sourceMethod.ReturnType.Kind() == SyntaxKind.VoidKeyword)
+        {
+            // Invoke method.
+            actPart = ExpressionStatement(methodInvocation);
+        }
+        else
+        {
+            // Assign to variable <actual> invocation statement.
+            actPart = LocalDeclarationStatement(
+                VariableDeclaration(sourceMethod.ReturnType)
+                    .WithVariables(
+                        SingletonSeparatedList(
+                            VariableDeclarator(
+                                    Identifier("actual"))
+                                .WithInitializer(
+                                    EqualsValueClause(methodInvocation)))));
+
+            // Declare variable <expected> and assert it equality with variable <actual>.
+            assertPart
+                .AddChained(LocalDeclarationStatement(
+                    VariableDeclaration(sourceMethod.ReturnType)
+                        .WithVariables(
+                            SingletonSeparatedList(
+                                VariableDeclarator(
+                                        Identifier("expected"))
+                                    .WithInitializer(
+                                        EqualsValueClause(
+                                            LiteralExpression(
+                                                SyntaxKind.DefaultLiteralExpression,
+                                                Token(SyntaxKind.DefaultKeyword))))))))
+                .AddChained(ExpressionStatement(
+                    InvocationExpression(
+                            MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                IdentifierName("Assert"),
+                                IdentifierName("Equal")))
+                        .WithArgumentList(
+                            ArgumentList(
+                                SeparatedList<ArgumentSyntax>(
+                                    new SyntaxNodeOrToken[]
+                                    {
+                                        Argument(
+                                            IdentifierName("expected")),
+                                        Token(SyntaxKind.CommaToken),
+                                        Argument(
+                                            IdentifierName("actual"))
+                                    })))));
+        }
+
+        // Throw exception.
+        assertPart.Add(ExpressionStatement(
+            ThrowExpression(
+                ObjectCreationExpression(
+                    IdentifierName("NotImplementedException"),
+                    ArgumentList(
+                        SingletonSeparatedList(
+                            Argument(
+                                LiteralExpression(
+                                    SyntaxKind.StringLiteralExpression,
+                                    Literal("Autogenerated"))))),
+                    null))));
+
+        return Block(new List<StatementSyntax>()
+            .AddChained(arrangePart)
+            .AddChained(actPart)
+            .AddChained(assertPart));
+    }
+
     public static IEnumerable<MethodDeclarationSyntax> GenerateTestsMethods(
         ClassDeclarationSyntax sourceClass,
         Func<MethodDeclarationSyntax, BlockSyntax> generateBody)
