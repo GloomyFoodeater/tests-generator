@@ -1,0 +1,8 @@
+﻿using static System.Int32;
+
+namespace TestsGenerator.Tests.TestData;
+
+public class MyClass
+{
+    public int ParseWrapper(string value) => Parse(value);
+}

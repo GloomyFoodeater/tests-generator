@@ -1,0 +1,6 @@
+﻿namespace MyNamespace;
+
+public class MyClass
+{
+    public void MyMethod() { }
+}

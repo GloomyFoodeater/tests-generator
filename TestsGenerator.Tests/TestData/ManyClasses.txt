@@ -1,0 +1,43 @@
+﻿namespace MyNamespace;
+
+public class MyClass1
+{
+    private int IntProp { get; set; }
+    internal string StringField;
+    public void Foo() => Console.WriteLine("Foo");
+    private int PrivateFoo()
+    {
+        Foo();
+        return 0;
+    }
+
+    internal class SomeClass
+    {
+        public SomeClass()
+        {
+            
+        }
+    }
+}
+
+public class MyClass2
+{
+    public int Overloaded() => 10;
+    public void Overloaded(int a) => Console.WriteLine(Overloaded() + a);
+    public void Overloaded(int a, string b) => Console.WriteLine(Overloaded() + a + b);
+    public void Overloaded(int a, string b, string c) => Console.WriteLine(Overloaded() + a + b + c);
+}
+
+public static class MyClass3
+{
+    public static int Factorial(int n)
+    {
+        int result = 1;
+        for (int i = 1; i < n; i++)
+        {
+            result *= i;
+        }
+
+        return result;
+    }
+}

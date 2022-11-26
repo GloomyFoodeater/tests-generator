@@ -1,0 +1,8 @@
+﻿namespace Quack.Bark.Woof.Reef
+
+public class Foo
+{
+    public void Goo(){
+    public void Hoo){}
+    public int Joo(int ) = b;
+}

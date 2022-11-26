@@ -21,4 +21,33 @@
         </PackageReference>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\TestsGenerator.Core\TestsGenerator.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="TestData\InvalidSyntax.cs" />
+      <EmbeddedResource Include="TestData\InvalidSyntax.txt" />
+      <Compile Remove="TestData\ZeroClasses.cs" />
+      <EmbeddedResource Include="TestData\ZeroClasses.txt" />
+      <Compile Remove="TestData\MissingNamespace.cs" />
+      <EmbeddedResource Include="TestData\MissingNamespace.txt" />
+      <Compile Remove="TestData\SameClasses.cs" />
+      <EmbeddedResource Include="TestData\SameClasses.txt" />
+      <Compile Remove="TestData\StaticsUsingDirectives.cs" />
+      <EmbeddedResource Include="TestData\StaticUsingDirectives.txt" />
+      <Compile Remove="TestData\SingleClass.cs" />
+      <EmbeddedResource Include="TestData\SingleClass.txt" />
+      <Compile Remove="TestData\SingleClassExpected.cs" />
+      <EmbeddedResource Include="TestData\SingleClassTests.txt" />
+      <Compile Remove="TestData\ManyClasses.cs" />
+      <EmbeddedResource Include="TestData\ManyClasses.txt" />
+      <Compile Remove="TestData\ManyClassesTests1.cs" />
+      <EmbeddedResource Include="TestData\ManyClassesTests1.txt" />
+      <Compile Remove="TestData\ManyClassesTests2.cs" />
+      <EmbeddedResource Include="TestData\ManyClassesTests2.txt" />
+      <Compile Remove="TestData\ManyClassesTests3.cs" />
+      <EmbeddedResource Include="TestData\ManyClassesTests3.txt" />
+    </ItemGroup>
+
 </Project>

@@ -1,0 +1,15 @@
+﻿namespace MyNamespace;
+
+public class MyClass
+{
+    public void Foo()
+    {
+    }
+}
+
+public class MyClass
+{
+    public void Foo()
+    {
+    }
+}
