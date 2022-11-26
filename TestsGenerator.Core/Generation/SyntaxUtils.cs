@@ -83,8 +83,25 @@ internal static class SyntaxUtils
         var separatedArguments = new List<SyntaxNodeOrToken>();
 
         // Iterate over parameters to create arrange part and argument list of act part.
+        var actualCount = 0;
+        var expectedCount = 0;
         foreach (var parameter in sourceMethod.ParameterList.Parameters)
         {
+            var parameterName = parameter.Identifier.Text;
+            int foundPostfix;
+            if (parameterName.StartsWith("expected"))
+            {
+                if (int.TryParse(parameterName["expected".Length..], out foundPostfix) &&
+                    foundPostfix > expectedCount)
+                    expectedCount = foundPostfix + 1;
+            }
+            else if (parameterName.StartsWith("actual"))
+            {
+                if (int.TryParse(parameterName["actual".Length..], out foundPostfix) &&
+                    foundPostfix > actualCount)
+                    actualCount = foundPostfix + 1;
+            }
+
             var declaration = LocalDeclarationStatement(
                 VariableDeclaration(parameter.Type!)
                     .WithVariables(
@@ -122,24 +139,27 @@ internal static class SyntaxUtils
         }
         else
         {
+            var actualName = actualCount > 0 ? $"actual{actualCount}" : "actual";
+
             // Assign to variable <actual> invocation statement.
             actPart = LocalDeclarationStatement(
                 VariableDeclaration(sourceMethod.ReturnType)
                     .WithVariables(
                         SingletonSeparatedList(
                             VariableDeclarator(
-                                    Identifier("actual"))
+                                    Identifier(actualName))
                                 .WithInitializer(
                                     EqualsValueClause(methodInvocation)))));
 
             // Declare variable <expected> and assert it equality with variable <actual>.
+            var expectedName = expectedCount > 0 ? $"expected{expectedCount}" : "expected";
             assertPart
                 .AddChained(LocalDeclarationStatement(
                     VariableDeclaration(sourceMethod.ReturnType)
                         .WithVariables(
                             SingletonSeparatedList(
                                 VariableDeclarator(
-                                        Identifier("expected"))
+                                        Identifier(expectedName))
                                     .WithInitializer(
                                         EqualsValueClause(
                                             LiteralExpression(
