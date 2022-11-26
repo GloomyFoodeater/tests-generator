@@ -9,10 +9,7 @@ public class XUnitGeneratorTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public XUnitGeneratorTests(ITestOutputHelper testOutputHelper)
-    {
-        _testOutputHelper = testOutputHelper;
-    }
+    public XUnitGeneratorTests(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
     [InlineData("SameClasses")]
     [InlineData("ZeroClasses")]
@@ -20,21 +17,29 @@ public class XUnitGeneratorTests
     [Theory]
     public void InvalidUnit(string sourceUnitName)
     {
+        // Arrange
         var generator = new XUnitGenerator();
         var sourceUnit = ReadProgramUnit(sourceUnitName);
         
+        // Act & assert
         Assert.Throws<TestsGeneratorException>(() => generator.Generate(sourceUnit));
     }
 
     [Fact]
     public void MissingNamespace()
     {
+        // Arrange
         var generator = new XUnitGenerator();
-        
         var sourceUnit = ReadProgramUnit("MissingNamespace");
-        var testsUnits = generator.Generate(sourceUnit);
-
-        _testOutputHelper.WriteLine(testsUnits.First().Content);
+        
+        // Act
+        var tests = generator.Generate(sourceUnit).First();
+        
+        // Assert
+        Assert.Equal("MyClass", tests.Name);
+        Assert.Contains("namespace Tests;", tests.Content);
+        
+        _testOutputHelper.WriteLine(tests.Content);
     }
 
     [Fact]
@@ -68,10 +73,10 @@ public class XUnitGeneratorTests
 
         // Assert
         Assert.Single(array);
-        Assert.Equal("MyNamespace.MyClass", array.First().Name);
-        Assert.Equal(testsUnit, array.First().Content);
+        Assert.Equal("MyClass", array[0].Name);
+        Assert.Equal(testsUnit, array[0].Content);
 
-        _testOutputHelper.WriteLine(array.First().Content);
+        _testOutputHelper.WriteLine(array[0].Content);
     }
 
     [Fact]
@@ -83,15 +88,15 @@ public class XUnitGeneratorTests
         var testsUnit = ReadProgramUnit("SmartClassTests");
 
         // Act
-        var testsInfos = generator.Generate(sourceUnit);
+        var testsInfos = generator.Generate(sourceUnit); 
         var array = testsInfos as TestsInfo[] ?? testsInfos.ToArray();
 
         // Assert
         Assert.Single(array);
-        Assert.Equal("MyNamespace.MyClass", array.First().Name);
-        Assert.Equal(testsUnit, array.First().Content);
+        Assert.Equal("MyClass", array[0].Name);
+        Assert.Equal(testsUnit, array[0].Content);
 
-        _testOutputHelper.WriteLine(array.First().Content);
+        _testOutputHelper.WriteLine(array[0].Content);
     }
 
     [Fact]
@@ -102,9 +107,9 @@ public class XUnitGeneratorTests
         var sourceUnit = ReadProgramUnit("ManyClasses");
         var expectedTests = new TestsInfo[]
         {
-            new("MyNamespace.MyClass1", ReadProgramUnit("ManyClassesTests1")),
-            new("MyNamespace.MyClass2", ReadProgramUnit("ManyClassesTests2")),
-            new("MyNamespace.MyClass3", ReadProgramUnit("ManyClassesTests3"))
+            new("MyClass1", ReadProgramUnit("ManyClassesTests1")),
+            new("MyClass2", ReadProgramUnit("ManyClassesTests2")),
+            new("MyClass3", ReadProgramUnit("ManyClassesTests3"))
         };
 
         // Act
