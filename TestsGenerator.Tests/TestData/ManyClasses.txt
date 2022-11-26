@@ -18,6 +18,15 @@ public class MyClass1
             
         }
     }
+    
+    public class SomePublicNestedClass
+    {
+        public SomeClass()
+        {
+            
+        }
+    }
+        
 }
 
 public class MyClass2
