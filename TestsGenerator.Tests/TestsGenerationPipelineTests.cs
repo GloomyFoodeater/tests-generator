@@ -5,7 +5,7 @@ namespace TestsGenerator.Tests;
 public class TestsGenerationPipeline
 {
     private readonly string _savePath =
-        $"{Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) ?? "."}\\TestData";
+        $"{Path.GetDirectoryName(AppDomain.CurrentDomain.BaseDirectory) ?? "."}\\TestsSources";
 
     [Fact]
     public void ZeroTestsGenerated()

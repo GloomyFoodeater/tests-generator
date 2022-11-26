@@ -27,53 +27,55 @@
 
     <ItemGroup>
       <Compile Remove="TestData\InvalidSyntax.cs" />
-      <EmbeddedResource Include="TestData\InvalidSyntax.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\InvalidSyntax.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\ZeroClasses.cs" />
-      <EmbeddedResource Include="TestData\ZeroClasses.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\ZeroClasses.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\MissingNamespace.cs" />
-      <EmbeddedResource Include="TestData\MissingNamespace.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\MissingNamespace.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\SameClasses.cs" />
-      <EmbeddedResource Include="TestData\SameClasses.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\SameClasses.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\StaticsUsingDirectives.cs" />
-      <EmbeddedResource Include="TestData\StaticUsingDirectives.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\StaticUsingDirectives.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\SingleClass.cs" />
-      <EmbeddedResource Include="TestData\SingleClass.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\SingleClass.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\SingleClassExpected.cs" />
-      <EmbeddedResource Include="TestData\SingleClassTests.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
       <Compile Remove="TestData\ManyClasses.cs" />
-      <EmbeddedResource Include="TestData\ManyClasses.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <EmbeddedResource Include="TestsSources\ManyClasses.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests1.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests1.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests2.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests2.txt">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </EmbeddedResource>
       <Compile Remove="TestData\ManyClassesTests3.cs" />
-      <EmbeddedResource Include="TestData\ManyClassesTests3.txt">
+      <EmbeddedResource Include="TestsExpected\ManyClassesTests1.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+      <EmbeddedResource Include="TestsExpected\ManyClassesTests2.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="TestsExpected\ManyClassesTests3.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="TestsExpected\SingleClassTests.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="TestsExpected\SmartClassTests.txt" />
       <None Remove="TestData\SmartClass.txt" />
-      <EmbeddedResource Include="TestData\SmartClass.txt" />
+      <EmbeddedResource Include="TestsSources\SmartClass.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
       <None Remove="TestData\SmartClassTests" />
-      <EmbeddedResource Include="TestData\SmartClassTests.txt" />
     </ItemGroup>
 
 </Project>

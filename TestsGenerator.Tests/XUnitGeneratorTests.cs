@@ -8,7 +8,9 @@ namespace TestsGenerator.Tests;
 public class XUnitGeneratorTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
-
+    private const string TestsSourcesFolder = "TestsSources";
+    private const string TestsExpectedFolder = "TestsExpected";
+    
     public XUnitGeneratorTests(ITestOutputHelper testOutputHelper) => _testOutputHelper = testOutputHelper;
 
     [InlineData("SameClasses")]
@@ -19,7 +21,7 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator();
-        var sourceUnit = ReadProgramUnit(sourceUnitName);
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder,sourceUnitName);
         
         // Act & assert
         Assert.Throws<TestsGeneratorException>(() => generator.Generate(sourceUnit));
@@ -30,7 +32,7 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator();
-        var sourceUnit = ReadProgramUnit("MissingNamespace");
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder, "MissingNamespace");
         
         // Act
         var tests = generator.Generate(sourceUnit).First();
@@ -47,7 +49,7 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator();
-        var sourceUnit = ReadProgramUnit("StaticUsingDirectives");
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder, "StaticUsingDirectives");
 
         // Act
         var testsInfos = generator.Generate(sourceUnit);
@@ -64,8 +66,8 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator();
-        var sourceUnit = ReadProgramUnit("SingleClass");
-        var testsUnit = ReadProgramUnit("SingleClassTests");
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder, "SingleClass");
+        var testsUnit = ReadProgramUnit(TestsExpectedFolder, "SingleClassTests");
 
         // Act
         var testsInfos = generator.Generate(sourceUnit);
@@ -84,8 +86,8 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator(TestBodyType.Templated);
-        var sourceUnit = ReadProgramUnit("SmartClass");
-        var testsUnit = ReadProgramUnit("SmartClassTests");
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder, "SmartClass");
+        var testsUnit = ReadProgramUnit(TestsExpectedFolder,"SmartClassTests");
 
         // Act
         var testsInfos = generator.Generate(sourceUnit); 
@@ -104,12 +106,12 @@ public class XUnitGeneratorTests
     {
         // Arrange
         var generator = new XUnitGenerator();
-        var sourceUnit = ReadProgramUnit("ManyClasses");
+        var sourceUnit = ReadProgramUnit(TestsSourcesFolder, "ManyClasses");
         var expectedTests = new TestsInfo[]
         {
-            new("MyClass1", ReadProgramUnit("ManyClassesTests1")),
-            new("MyClass2", ReadProgramUnit("ManyClassesTests2")),
-            new("MyClass3", ReadProgramUnit("ManyClassesTests3"))
+            new("MyClass1", ReadProgramUnit(TestsExpectedFolder,"ManyClassesTests1")),
+            new("MyClass2", ReadProgramUnit(TestsExpectedFolder,"ManyClassesTests2")),
+            new("MyClass3", ReadProgramUnit(TestsExpectedFolder,"ManyClassesTests3"))
         };
 
         // Act
