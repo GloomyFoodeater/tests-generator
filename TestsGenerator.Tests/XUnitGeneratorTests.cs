@@ -32,7 +32,9 @@ public class XUnitGeneratorTests
         var generator = new XUnitGenerator();
         
         var sourceUnit = ReadProgramUnit("MissingNamespace");
-        Assert.Throws<TestsGeneratorException>(() => generator.Generate(sourceUnit));
+        var testsUnits = generator.Generate(sourceUnit);
+
+        _testOutputHelper.WriteLine(testsUnits.First().Content);
     }
 
     [Fact]

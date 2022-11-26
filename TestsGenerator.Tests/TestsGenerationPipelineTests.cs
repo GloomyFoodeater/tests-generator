@@ -16,7 +16,6 @@ public class TestsGenerationPipeline
         var fileNames = new[]
         {
             $"{_savePath}\\InvalidSyntax.txt",
-            $"{_savePath}\\MissingNamespace.txt",
             $"{_savePath}\\ZeroClasses.txt"
         };
 

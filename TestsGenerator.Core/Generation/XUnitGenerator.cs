@@ -26,7 +26,9 @@ public class XUnitGenerator : ITestGenerator
         var classes = unit
             .DescendantNodes()
             .OfType<ClassDeclarationSyntax>()
-            .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword)) // Only public classes
+            .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword) &&
+                             @class.Parent is BaseNamespaceDeclarationSyntax
+                                 or CompilationUnitSyntax) // Only public outer classes
             .ToArray(); // Multiple enumerations below => immediate execution
 
         // Detect classes with same names.
@@ -41,14 +43,14 @@ public class XUnitGenerator : ITestGenerator
 
         if (!classes.Any())
             throw new TestsGeneratorException("Source unit does not contain any classes");
-        
+
         Func<MethodDeclarationSyntax, BlockSyntax> generateBody = _bodyType switch
         {
             TestBodyType.Empty => _ => GetFailedTestBlock(),
             TestBodyType.Templated => GetTemplateTestBlock,
             _ => throw new TestsGeneratorException("Enumeration BodyType was invalid.")
         };
-        
+
         // Generate sequentially methods, classes, namespaces, using directives and units
         // for each source class and create tests from units.
         return (from @class in classes
