@@ -24,7 +24,7 @@ public class XUnitGenerator : ITestGenerator
             .OfType<ClassDeclarationSyntax>()
             .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword)) // Only public classes
             .ToArray(); // Multiple enumerations below => immediate execution
-        
+
         // Detect classes with same names.
         var hasDuplicates = classes.Length != classes.DistinctBy(@class => @class.Identifier.Text).Count();
         if (hasDuplicates)
@@ -40,15 +40,16 @@ public class XUnitGenerator : ITestGenerator
 
         // Generate sequentially methods, classes, namespaces, using directives and units
         // for each source class and create tests from units.
-        return from @class in classes
-            let namespacesNames = GetFullNamespacesNamesFrom(@class)
-            let testsMethods = GenerateTestsMethods(@class, _ => GetFailedTestBlock())
-            let testsClass = GenerateTestsClass(testsMethods, @class)
-            let testsNamespace = GenerateTestsNamespace(testsClass, namespacesNames)
-            let testsUsingDirectives = GenerateTestsUsingDirectives(usingDirectives, namespacesNames)
-            let testsUnit = GenerateTestsUnit(testsUsingDirectives, testsNamespace)
-            select new TestsInfo(
-                $"{namespacesNames[^1]}.{@class.Identifier}",
-                testsUnit.NormalizeWhitespace().ToFullString());
+        return (from @class in classes
+                let namespacesNames = GetFullNamespacesNamesFrom(@class)
+                let testsMethods = GenerateTestsMethods(@class, _ => GetFailedTestBlock())
+                let testsClass = GenerateTestsClass(testsMethods, @class)
+                let testsNamespace = GenerateTestsNamespace(testsClass, namespacesNames)
+                let testsUsingDirectives = GenerateTestsUsingDirectives(usingDirectives, namespacesNames)
+                let testsUnit = GenerateTestsUnit(testsUsingDirectives, testsNamespace)
+                select new TestsInfo(
+                    $"{namespacesNames[^1]}.{@class.Identifier}",
+                    testsUnit.NormalizeWhitespace().ToFullString()))
+            .ToArray(); // Immediate execution
     }
 }

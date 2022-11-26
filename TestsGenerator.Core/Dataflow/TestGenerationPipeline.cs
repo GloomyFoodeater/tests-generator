@@ -63,9 +63,11 @@ public class TestGenerationPipeline
         var tests = Array.Empty<TestsInfo>();
         try
         {
-            tests = _configuration.TestsGenerator // Generator must be thread safe
-                .Generate(fileContent)
-                .ToArray(); // Immediate execution
+            // Generator must be thread safe.
+            var enumerable = _configuration.TestsGenerator.Generate(fileContent);
+            
+            // Conversion in case enumerable is deferred.
+            tests = enumerable as TestsInfo[] ?? enumerable.ToArray();
         }
         catch
         {
