@@ -1,21 +1,13 @@
-﻿using System.Reflection;
-using TestsGenerator.Core.Exceptions;
+﻿using TestsGenerator.Core.Exceptions;
 using TestsGenerator.Core.Generation;
+using static TestsGenerator.Tests.TestsUtils;
 
 namespace TestsGenerator.Tests;
 
 public class XUnitGeneratorTests
 {
     private readonly XUnitGenerator _generator = new();
-
-    private static string ReadProgramUnit(string sourceUnitName)
-    {
-        var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream($"TestsGenerator.Tests.TestData.{sourceUnitName}.txt");
-        using var reader = new StreamReader(stream!);
-        return reader.ReadToEnd();
-    }
-
+    
     [InlineData("SameClasses")]
     [InlineData("ZeroClasses")]
     [InlineData("InvalidSyntax")]
