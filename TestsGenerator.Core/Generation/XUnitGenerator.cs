@@ -8,6 +8,10 @@ namespace TestsGenerator.Core.Generation;
 
 public class XUnitGenerator : ITestGenerator
 {
+    private readonly TestBodyType _bodyType;
+
+    public XUnitGenerator(TestBodyType bodyType = TestBodyType.Empty) => _bodyType = bodyType;
+
     public IEnumerable<TestsInfo> Generate(string source)
     {
         // Extract members from source unit.
@@ -37,12 +41,19 @@ public class XUnitGenerator : ITestGenerator
 
         if (!classes.Any())
             throw new TestsGeneratorException("Source unit does not contain any classes");
-
+        
+        Func<MethodDeclarationSyntax, BlockSyntax> generateBody = _bodyType switch
+        {
+            TestBodyType.Empty => _ => GetFailedTestBlock(),
+            TestBodyType.Templated => GetTemplateTestBlock,
+            _ => throw new TestsGeneratorException("Enumeration BodyType was invalid.")
+        };
+        
         // Generate sequentially methods, classes, namespaces, using directives and units
         // for each source class and create tests from units.
         return (from @class in classes
                 let namespacesNames = GetFullNamespacesNamesFrom(@class)
-                let testsMethods = GenerateTestsMethods(@class, _ => GetFailedTestBlock())
+                let testsMethods = GenerateTestsMethods(@class, generateBody)
                 let testsClass = GenerateTestsClass(testsMethods, @class)
                 let testsNamespace = GenerateTestsNamespace(testsClass, namespacesNames)
                 let testsUsingDirectives = GenerateTestsUsingDirectives(usingDirectives, namespacesNames)

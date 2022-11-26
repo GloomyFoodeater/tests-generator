@@ -1,0 +1,11 @@
+﻿namespace MyNamespace;
+
+public class MyClass
+{
+    public void Foo() {}
+    public void Foo(int a) {}
+    public int Foo(int a, int b) {return a+b;}
+    public string Bar(int a) {return a.ToString();}
+    public int Bar(string a) => int.Parse(a);
+    public int Bar(string a, double b, float c, object d, MyClass e, int f) => throw new NotImplementedException();    
+}

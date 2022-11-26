@@ -70,6 +70,10 @@
       <EmbeddedResource Include="TestData\ManyClassesTests3.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+      <None Remove="TestData\SmartClass.txt" />
+      <EmbeddedResource Include="TestData\SmartClass.txt" />
+      <None Remove="TestData\SmartClassTests" />
+      <EmbeddedResource Include="TestData\SmartClassTests.txt" />
     </ItemGroup>
 
 </Project>
