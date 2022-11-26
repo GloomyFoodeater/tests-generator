@@ -25,6 +25,11 @@ public class XUnitGenerator : ITestGenerator
             .Where(@class => @class.Modifiers.Any(SyntaxKind.PublicKeyword)) // Only public classes
             .ToArray(); // Multiple enumerations below => immediate execution
         
+        // Detect classes with same names.
+        var hasDuplicates = classes.Length != classes.DistinctBy(@class => @class.Identifier.Text).Count();
+        if (hasDuplicates)
+            throw new TestsGeneratorException("Source unit contain classes with same names in same namespace");
+
         var usingDirectives = unit
             .DescendantNodes()
             .OfType<UsingDirectiveSyntax>()
