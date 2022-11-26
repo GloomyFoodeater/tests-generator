@@ -1,4 +1,5 @@
 ﻿using TestsGenerator.Core.Dataflow;
+using TestsGenerator.Core.Generation;
 using static System.Int32;
 
 // General usage message.
@@ -9,10 +10,11 @@ if (args.Length == 0)
                   "[-d <output path>] " +
                   "[-r max reading tasks] " +
                   "[-p max processing tasks] " +
-                  "[-w max writing tasks]\n" +
+                  "[-w max writing tasks] " +
+                  "[-s]\n" +
                   "There must be at least 1 source file.\n" +
                   "If error occured while reading/processing/writing a file, it will be skipped.\n" +
-                  "Order of options is significant.";
+                  "Order of options is not significant.";
     Console.Error.WriteLine(message);
     return;
 }
@@ -23,6 +25,7 @@ int maxReadingTasks = 0;
 int maxProcessingTasks = 0;
 int maxWritingTasks = 0;
 var savePath = PipelineConfiguration.DefaultSavePath;
+var bodyType = TestBodyType.Empty;
 
 // Get all source files.
 var i = 1;
@@ -55,6 +58,9 @@ for (; i < args.Length; i++)
             case "-w":
                 TryParse(args[i + 1], out maxWritingTasks);
                 break;
+            case "-s":
+                bodyType = TestBodyType.Templated;
+                break;
             // Write tasks warning.
             default:
                 Console.Error.WriteLine($"Unknown option '{args[i + 1]}'.");
@@ -72,14 +78,16 @@ var configuration = new PipelineConfiguration
     MaxReadingTasks = maxReadingTasks > 0 ? maxReadingTasks : PipelineConfiguration.DefaultReadingTasks,
     MaxProcessingTasks = maxProcessingTasks > 0 ? maxProcessingTasks : PipelineConfiguration.DefaultProcessingTasks,
     MaxWritingTasks = maxWritingTasks > 0 ? maxWritingTasks : PipelineConfiguration.DefaultWritingTasks,
-    SavePath = savePath
+    SavePath = savePath,
+    TestsGenerator = new XUnitGenerator(bodyType)
 };
 var pipeline = new TestGenerationPipeline(configuration);
-Console.WriteLine($"Pipeline configurations: " +
+Console.WriteLine("Pipeline configurations: " +
                   $"-d '{configuration.SavePath}' " +
                   $"-r {configuration.MaxReadingTasks} " +
                   $"-p {configuration.MaxProcessingTasks} " +
-                  $"-w {configuration.MaxProcessingTasks}.");
+                  $"-w {configuration.MaxProcessingTasks} " +
+                  (bodyType == TestBodyType.Empty ? string.Empty : "-s."));
 
 // Start processing files.
 var generatedAny = pipeline.Process(sourceFiles).Result;
